@@ -3,337 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Taller - Nube</title>
+    <title>Control Taller Logística</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* Estilos de Tarjetas */
-        .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 20px; }
-        .card-header { background-color: white; border-bottom: 1px solid #eee; padding: 15px; border-radius: 12px 12px 0 0 !important; }
-        
-        /* Encabezado Principal */
-        .header-bg { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; padding: 25px 0; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* Tarjetas de Estadísticas con colores */
-        .stat-card { border-left: 5px solid; transition: transform 0.2s; height: 100%; display: flex; flex-direction: column; justify-content: center; }
-        .stat-card:hover { transform: translateY(-5px); }
-        .border-ingreso { border-color: #28a745; }   /* Verde */
-        .border-pendiente { border-color: #17a2b8; } /* Azul */
-        .border-retiro { border-color: #ffc107; }    /* Amarillo */
-        .border-rechazo { border-color: #dc3545; }   /* Rojo */
-
-        /* Pantalla de Carga */
-        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; }
-        
-        /* Tabla */
-        .table thead th { font-weight: 600; color: #555; background-color: #f8f9fa; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; }
+        .stats-card { border-left: 5px solid #0d6efd; }
+        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:2000; justify-content:center; align-items:center; flex-direction:column; }
+        .table-total { background-color: #e9ecef; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-    <h5 class="mt-3 text-secondary">Sincronizando con la nube... ☁️</h5>
+<div id="loading" class="loading">
+    <div class="spinner-border text-primary" role="status"></div>
+    <h5 class="mt-3">Sincronizando con Google Sheets...</h5>
 </div>
 
-<div class="header-bg text-center">
-    <div class="container">
-        <h1 class="fw-bold">🚛 Control de Movimientos Taller</h1>
-        <p class="mb-0 opacity-75">Panel de Control en Tiempo Real</p>
-    </div>
-</div>
+<div class="container py-4">
+    <ul class="nav nav-pills justify-content-center mb-4" id="pills-tab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" onclick="showView('form')" id="btn-form">📝 Registro Diario</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="showView('stats')" id="btn-stats">📊 Panel de Estadísticas</button>
+        </li>
+    </ul>
 
-<div class="container">
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card p-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong class="text-secondary">📊 Cumplimiento de Reporte (Semanal)</strong>
-                    <span id="kpiText" class="badge bg-light text-dark border">Cargando...</span>
-                </div>
-                <div class="progress" style="height: 20px;">
-                    <div id="kpiBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%"></div>
-                </div>
+    <div id="view-form" class="view-section">
+        <div class="card mx-auto" style="max-width: 600px;">
+            <div class="card-header bg-primary text-white text-center fw-bold py-3">NUEVO REPORTE DIARIO</div>
+            <div class="card-body p-4">
+                <form id="tallerForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha del Reporte</label>
+                        <input type="date" id="fecha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-success fw-bold">INGRESOS</label>
+                        <textarea id="ingresos" class="form-control" rows="2" placeholder="Pegue aquí las patentes..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info fw-bold">PENDIENTES DE INGRESO</label>
+                        <textarea id="pendientes" class="form-control" rows="2" placeholder="Unidades que no entraron..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-warning fw-bold">UNIDADES RETIRADAS DE TALLER</label>
+                        <textarea id="retiros" class="form-control" rows="2" placeholder="Unidades que salieron OK..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-danger fw-bold">RECHAZADAS</label>
+                            <textarea id="rechazos" class="form-control" rows="1" placeholder="Si no hubo, dejar vacío"></textarea>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold">LOGÍSTICA</label>
+                            <textarea id="entregas" class="form-control" rows="1" placeholder="Entregadas"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-3">ENVIAR A EXCEL 🚀</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">📝 Nuevo Registro Diario</h5>
-                </div>
-                <div class="card-body">
-                    <form id="tallerForm">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Fecha</label>
-                            <input type="date" id="fecha" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label text-success fw-bold">🟢 Ingresos</label>
-                            <textarea id="ingresos" class="form-control" rows="2" placeholder="Ej: TRRX32, TPVF77"></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label text-info fw-bold">⚠️ Pendientes</label>
-                            <textarea id="pendientes" class="form-control" rows="2" placeholder="Ej: SWVT55"></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label text-warning fw-bold">🔧 Retiros</label>
-                            <textarea id="retiros" class="form-control" rows="2" placeholder="Ej: SKTX54"></textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <label class="form-label text-danger fw-bold">🚫 Rechazos</label>
-                                <textarea id="rechazos" class="form-control" rows="1" placeholder="Detalle"></textarea>
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label class="form-label fw-bold">🚚 Logística</label>
-                                <textarea id="entregas" class="form-control" rows="1" placeholder="Detalle"></textarea>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mt-2">💾 Guardar Reporte</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-8">
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3">
-                    <div class="card stat-card border-ingreso p-3 text-center">
-                        <small class="text-muted text-uppercase fw-bold">Ingresos (Mes)</small>
-                        <h2 id="totalIngresos" class="mb-0 fw-bold text-dark">0</h2>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="card stat-card border-pendiente p-3 text-center">
-                        <small class="text-muted text-uppercase fw-bold">Pendientes</small>
-                        <h2 id="totalPendientes" class="mb-0 fw-bold text-dark">0</h2>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="card stat-card border-retiro p-3 text-center">
-                        <small class="text-muted text-uppercase fw-bold">Retiros (Mes)</small>
-                        <h2 id="totalRetiros" class="mb-0 fw-bold text-dark">0</h2>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="card stat-card border-rechazo p-3 text-center">
-                        <small class="text-muted text-uppercase fw-bold">Rechazos</small>
-                        <h2 id="totalRechazos" class="mb-0 fw-bold text-dark">0</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold">📋 Historial Reciente (Sincronizado)</h6>
-                    <button onclick="loadData()" class="btn btn-sm btn-outline-secondary">🔄 Actualizar</button>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover mb-0 align-middle text-center">
-                            <thead class="sticky-top bg-light">
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Ing.</th>
-                                    <th>Pend.</th>
-                                    <th>Ret.</th>
-                                    <th>Rech.</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTable">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div id="view-stats" class="view-section" style="display: none;">
+        <div class="row" id="statsContainer">
+            <div class="col-12 text-center text-muted">Cargando datos históricos...</div>
         </div>
     </div>
 </div>
 
 <script>
-    // **********************************************************
-    // TU NUEVA URL DE GOOGLE APPS SCRIPT
-    // **********************************************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxliT0049s_YrNb6Z293ZkD7MV-cXv1pLQuZD96E3n-AdM6g8ySRHePsZJ-RC-KNVg/exec";
+    // URL DE TU IMPLEMENTACIÓN VERSIÓN 21
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5F2nfAV0K74CgIxg9VHMeYwq7M5rGU7ZMGngBVt6KwbdKZflZ0RiuBDXwZEAxCUkGOA/exec";
 
-    // Poner fecha de hoy al iniciar
     document.getElementById('fecha').valueAsDate = new Date();
-    
-    // Cargar datos automáticamente al abrir la página
-    window.onload = loadData;
 
-    // --- FUNCIÓN 1: CONTAR PALABRAS/CÓDIGOS ---
-    function contar(texto) {
-        if (!texto || texto.trim() === '') return 0;
-        // Reemplaza comas y saltos por espacios, quita espacios extra y cuenta
-        return texto.replace(/,/g, ' ').replace(/\n/g, ' ').trim().split(/\s+/).filter(i => i.length > 0).length;
+    function showView(view) {
+        document.getElementById('view-form').style.display = (view === 'form') ? 'block' : 'none';
+        document.getElementById('view-stats').style.display = (view === 'stats') ? 'block' : 'none';
+        document.getElementById('btn-form').classList.toggle('active', view === 'form');
+        document.getElementById('btn-stats').classList.toggle('active', view === 'stats');
+
+        if(view === 'stats') cargarEstadisticas();
     }
 
-    // --- FUNCIÓN 2: CARGAR DATOS DESDE GOOGLE SHEETS (GET) ---
-    function loadData() {
+    function cargarEstadisticas() {
         document.getElementById('loading').style.display = 'flex';
-        
         fetch(SCRIPT_URL)
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-            updateDashboard(data);
+            renderizarEstadisticas(data);
             document.getElementById('loading').style.display = 'none';
-        })
-        .catch(error => {
-            console.error('Error cargando datos:', error);
-            document.getElementById('loading').style.display = 'none';
-        });
-    }
-
-    // --- FUNCIÓN 3: ACTUALIZAR EL DASHBOARD CON LOS DATOS ---
-    function updateDashboard(data) {
-        const tableBody = document.getElementById('historyTable');
-        tableBody.innerHTML = '';
-
-        let tIng = 0, tPend = 0, tRet = 0, tRech = 0;
-        
-        // Invertimos el array para mostrar primero lo más reciente
-        const reversedData = data.slice().reverse();
-
-        reversedData.forEach(row => {
-            // Formatear la fecha para que se vea bonita (DD/MM)
-            let dateStr = row.fecha;
-            try {
-                let rawDate = new Date(row.fecha);
-                // Ajuste de zona horaria simple si es necesario, o uso directo
-                if(!isNaN(rawDate)) {
-                    dateStr = rawDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
-                }
-            } catch(e) {}
-
-            // Sumar a los totales (convirtiendo a número)
-            tIng += Number(row.cantIngresos) || 0;
-            tPend += Number(row.cantPendientes) || 0;
-            tRet += Number(row.cantRetiros) || 0;
-            tRech += Number(row.cantRechazos) || 0;
-
-            // Crear fila de tabla HTML
-            let htmlRow = `<tr>
-                <td class="text-muted fw-bold">${dateStr}</td>
-                <td><span class="badge bg-success rounded-pill">${row.cantIngresos}</span></td>
-                <td><span class="badge bg-info text-dark rounded-pill">${row.cantPendientes}</span></td>
-                <td><span class="badge bg-warning text-dark rounded-pill">${row.cantRetiros}</span></td>
-                <td><span class="badge bg-danger rounded-pill">${row.cantRechazos || 0}</span></td>
-            </tr>`;
-            tableBody.innerHTML += htmlRow;
-        });
-
-        // Actualizar los números grandes de las tarjetas
-        animateValue("totalIngresos", tIng);
-        animateValue("totalPendientes", tPend);
-        animateValue("totalRetiros", tRet);
-        animateValue("totalRechazos", tRech);
-
-        // Calcular KPI Semanal
-        calculateKPI(data);
-    }
-
-    // Efecto de animación de números
-    function animateValue(id, value) {
-        document.getElementById(id).innerText = value;
-    }
-
-    // --- FUNCIÓN 4: CALCULAR BARRA DE PROGRESO ---
-    function calculateKPI(data) {
-        // Lógica simple: Contar registros de los últimos 5 días reales
-        // En un sistema real usaríamos fechas exactas, aquí simplificamos visualmente
-        let reportCount = 0;
-        if (data.length > 0) {
-            // Tomamos hasta 5 registros recientes como aproximación de la semana laboral
-            reportCount = data.length >= 5 ? 5 : data.length;
-        }
-
-        let percent = (reportCount / 5) * 100;
-        if(percent > 100) percent = 100;
-        
-        const bar = document.getElementById('kpiBar');
-        bar.style.width = percent + '%';
-        
-        if(percent >= 100) {
-            bar.classList.remove('bg-primary');
-            bar.classList.add('bg-success');
-            document.getElementById('kpiText').innerText = "¡Objetivo Cumplido! 🎉";
-        } else {
-            bar.classList.add('bg-primary');
-            bar.classList.remove('bg-success');
-            document.getElementById('kpiText').innerText = `${reportCount}/5 Días reportados`;
-        }
-    }
-
-    // --- FUNCIÓN 5: ENVIAR NUEVO REPORTE (POST) ---
-    document.getElementById('tallerForm').addEventListener('submit', e => {
-        e.preventDefault();
-        
-        // Bloquear botón y mostrar carga
-        const btn = document.querySelector('button[type="submit"]');
-        const originalText = btn.innerText;
-        btn.disabled = true;
-        btn.innerText = "Enviando...";
-        document.getElementById('loading').style.display = 'flex';
-
-        // Capturar valores
-        const iTxt = document.getElementById('ingresos').value;
-        const pTxt = document.getElementById('pendientes').value;
-        const rTxt = document.getElementById('retiros').value;
-        const reTxt = document.getElementById('rechazos').value;
-
-        // Preparar paquete de datos
-        const data = {
-            fecha: document.getElementById('fecha').value,
-            ingresos: iTxt,
-            cantIngresos: contar(iTxt),
-            pendientes: pTxt,
-            cantPendientes: contar(pTxt),
-            retiros: rTxt,
-            cantRetiros: contar(rTxt),
-            rechazos: reTxt,
-            cantRechazos: contar(reTxt), 
-            entregas: document.getElementById('entregas').value
-        };
-
-        // Enviar a Google Apps Script
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(() => {
-            alert("✅ ¡Reporte guardado correctamente!");
-            // Limpiar formulario
-            document.getElementById('tallerForm').reset();
-            document.getElementById('fecha').valueAsDate = new Date();
-            
-            // Recargar datos para ver el cambio reflejado
-            loadData();
         })
         .catch(err => {
             console.error(err);
-            alert("❌ Hubo un error de conexión.");
-        })
-        .finally(() => {
-            // Restaurar botón y quitar carga
-            btn.disabled = false;
-            btn.innerText = originalText;
             document.getElementById('loading').style.display = 'none';
         });
-    });
+    }
 
+    function renderizarEstadisticas(data) {
+        let agrupado = {};
+        // Procesamos filas saltando cabecera (i=1)
+        for(let i=1; i < data.length; i++) {
+            let f = data[i][0]; // Fecha
+            let cat = data[i][1]; // Categoría
+            if(!f) continue;
+
+            let fechaStr = new Date(f).toLocaleDateString();
+            if(!agrupado[fechaStr]) agrupado[fechaStr] = {ing:0, ret:0, rech:0, log:0, pend:0};
+
+            if(cat === "INGRESO") agrupado[fechaStr].ing++;
+            if(cat === "UNIDAD RETIRADA DE TALLER") agrupado[fechaStr].ret++;
+            if(cat === "UNIDAD RECHAZADA") agrupado[fechaStr].rech++;
+            if(cat === "UNIDAD ENTREGADA A LOGÍSTICA") agrupado[fechaStr].log++;
+        }
+
+        let html = "";
+        const fechasOrdenadas = Object.keys(agrupado).reverse();
+
+        fechasOrdenadas.forEach(fecha => {
+            let d = agrupado[fecha];
+            let movimientosTotales = d.ing + d.ret + d.rech + d.log;
+            
+            html += `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card stats-card h-100">
+                        <div class="card-header fw-bold bg-white border-0 pt-3">📅 Fecha: ${fecha}</div>
+                        <div class="card-body pt-0">
+                            <table class="table table-sm mt-2">
+                                <tbody>
+                                    <tr><td>Total Ingresos</td><td class="text-end fw-bold">${d.ing}</td></tr>
+                                    <tr><td>Total Retiros Taller</td><td class="text-end fw-bold">${d.ret}</td></tr>
+                                    <tr><td>Total Rechazos/Entregas</td><td class="text-end fw-bold">${d.rech + d.log}</td></tr>
+                                    <tr class="table-total">
+                                        <td>MOVIMIENTOS TOTALES</td>
+                                        <td class="text-end">${movimientosTotales}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('statsContainer').innerHTML = html || "<div class='text-center w-100'>No hay datos registrados.</div>";
+    }
+
+    document.getElementById('tallerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        document.getElementById('loading').style.display = 'flex';
+
+        const payload = {
+            fecha: document.getElementById('fecha').value,
+            ingresos: document.getElementById('ingresos').value,
+            pendientes: document.getElementById('pendientes').value,
+            retiros: document.getElementById('retiros').value,
+            rechazos: document.getElementById('rechazos').value,
+            entregas: document.getElementById('entregas').value
+        };
+
+        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+        .then(() => {
+            document.getElementById('loading').style.display = 'none';
+            alert("✅ Registro exitoso. Datos guardados de forma horizontal en la nube.");
+            this.reset();
+            document.getElementById('fecha').valueAsDate = new Date();
+        })
+        .catch(err => {
+            document.getElementById('loading').style.display = 'none';
+            alert("❌ Error al conectar.");
+        });
+    });
 </script>
 
 </body>
