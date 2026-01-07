@@ -3,60 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Unidades Taller</title>
+    <title>Gestión Operativa Taller - KPIs</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
-        .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; }
-        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:2000; justify-content:center; align-items:center; flex-direction:column; }
+        :root { --primary: #2563eb; --success: #16a34a; --warning: #ca8a04; --danger: #dc2626; --info: #0891b2; }
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .nav-link { font-weight: bold; border-radius: 10px !important; margin: 0 5px; color: #64748b; }
+        .nav-link.active { background-color: var(--primary) !important; color: white !important; }
+        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
+        .stat-card { border-left: 5px solid var(--primary); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .label-bold { font-weight: 700; font-size: 0.85rem; text-uppercase; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading"><div class="spinner-border text-primary"></div><h5 class="mt-3">Sincronizando...</h5></div>
+<div id="loading" class="loading">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+    <h5 class="mt-3 fw-bold text-secondary">Procesando datos...</h5>
+</div>
 
 <div class="container py-4">
-    <h2 class="text-center fw-bold mb-4">🚛 PANEL DE GESTIÓN TALLER</h2>
-
-    <div class="card p-3 mb-4 text-center">
-        <h6 class="text-muted small fw-bold">RENDIMIENTO SEMANAL (LUNES A VIERNES)</h6>
-        <h2 id="weekly-percent">0%</h2>
-        <div class="progress" style="height: 10px;"><div id="weekly-bar" class="progress-bar bg-success" style="width: 0%"></div></div>
-        <small id="weekly-label" class="text-muted mt-2">0 de 5 días reportados</small>
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">🚀 DASHBOARD GESTIÓN TALLER</h2>
     </div>
 
-    <div class="card mx-auto p-4" style="max-width: 600px;">
-        <form id="tallerForm">
-            <div class="mb-3"><label class="form-label fw-bold">FECHA</label><input type="date" id="fecha" class="form-control" required></div>
-            
-            <div class="mb-3 text-success fw-bold"><label>INGRESOS:</label>
-                <textarea id="ingresos" class="form-control" rows="2" placeholder="Patente (Ej: SWVR65)"></textarea>
-            </div>
-            
-            <div class="p-3 bg-light rounded mb-3 border">
-                <label class="form-label text-danger fw-bold">UNIDADES RECHAZADAS:</label>
-                <input type="text" id="rechazoPatente" class="form-control mb-2" placeholder="Patente rechazada">
-                <textarea id="motivoRechazo" class="form-control" rows="2" placeholder="MOTIVO DEL RECHAZO (Ej: Testigos encendidos)"></textarea>
-            </div>
+    <ul class="nav nav-pills nav-justified mb-4" id="pills-tab">
+        <li class="nav-item">
+            <button class="nav-link active" onclick="showTab('form')">📝 REGISTRO DIARIO</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="showTab('stats')">📈 EVALUACIÓN (KPIs)</button>
+        </li>
+    </ul>
 
-            <div class="mb-3 text-info fw-bold"><label>PENDIENTES DE INGRESO:</label>
-                <textarea id="pendientes" class="form-control" rows="2" placeholder="Patente"></textarea>
-            </div>
+    <div id="view-form">
+        <div class="card mx-auto p-4" style="max-width: 600px;">
+            <form id="tallerForm">
+                <div class="mb-3">
+                    <label class="label-bold">FECHA</label>
+                    <input type="date" id="fecha" class="form-control" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="label-bold text-success">🟢 INGRESOS (Patentes)</label>
+                    <textarea id="ingresos" class="form-control" rows="1" placeholder="Ej: SWVR65"></textarea>
+                </div>
 
-            <div class="mb-3 text-warning fw-bold"><label>RETIRADAS DE TALLER:</label>
-                <textarea id="retiros" class="form-control" rows="2" placeholder="Patente"></textarea>
-            </div>
+                <div class="p-3 bg-light rounded-3 mb-3 border">
+                    <label class="label-bold text-danger">🚫 UNIDADES RECHAZADAS</label>
+                    <input type="text" id="rechazos" class="form-control mb-2" placeholder="Patente">
+                    <textarea id="motivoRechazo" class="form-control" rows="2" placeholder="MOTIVO DEL RECHAZO (Ej: TESTIGOS ENCENDIDOS)"></textarea>
+                </div>
 
-            <button type="submit" class="btn btn-primary w-100 fw-bold py-3">GUARDAR Y EVALUAR 🚀</button>
-        </form>
+                <div class="mb-3">
+                    <label class="label-bold text-info">⌛ PENDIENTES DE INGRESO</label>
+                    <textarea id="pendientes" class="form-control" rows="1"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="label-bold text-warning">🔧 RETIRADAS DE TALLER</label>
+                    <textarea id="retiros" class="form-control" rows="1"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="label-bold text-primary">🚚 ENTREGADAS A LOGÍSTICA</label>
+                    <textarea id="entregas" class="form-control" rows="1"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold shadow py-3">GUARDAR EN EXCEL Y EVALUAR 🚀</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="view-stats" style="display:none;">
+        <div class="row g-4" id="statsContainer">
+            </div>
     </div>
 </div>
 
 <script>
-    // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT (LA QUE TERMINA EN /exec)
-    const SCRIPT_URL = "TU_URL_AQUI"; 
+    // TU URL DE GOOGLE APPS SCRIPT ACTUALIZADA
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZy9WHKqJhZa3Fl0WPauNjFyiXSM8wDg4PaS9chTnEoaCtCvm1wKWqecOGSZNQCUyucA/exec";
 
     document.getElementById('fecha').valueAsDate = new Date();
+
+    function showTab(view) {
+        document.getElementById('view-form').style.display = (view === 'form') ? 'block' : 'none';
+        document.getElementById('view-stats').style.display = (view === 'stats') ? 'block' : 'none';
+        
+        // Actualizar botones de navegación
+        document.querySelectorAll('.nav-link').forEach(btn => {
+            btn.classList.toggle('active', btn.innerText.includes(view === 'form' ? 'REGISTRO' : 'EVALUACIÓN'));
+        });
+
+        if(view === 'stats') loadStats();
+    }
+
+    function loadStats() {
+        document.getElementById('loading').style.display = 'flex';
+        fetch(SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => {
+            renderKPIs(data);
+            document.getElementById('loading').style.display = 'none';
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('loading').style.display = 'none';
+        });
+    }
+
+    function renderKPIs(data) {
+        let stats = {};
+        // Procesar datos (saltando cabecera)
+        for(let i=1; i < data.length; i++) {
+            let f = data[i][0]; // Fecha
+            if (f instanceof String || typeof f === 'string') {
+                f = f.split('T')[0]; // Limpiar formato fecha si viene de JS
+            } else {
+                f = new Date(f).toLocaleDateString();
+            }
+            
+            let cat = data[i][1];
+            if(!stats[f]) stats[f] = {ing:0, ret:0, rech:0, pend:0, log:0};
+            
+            if(cat === "INGRESO") stats[f].ing++;
+            if(cat === "RETIRADA DE TALLER") stats[f].ret++;
+            if(cat === "RECHAZADA") stats[f].rech++;
+            if(cat === "PENDIENTE DE INGRESO") stats[f].pend++;
+            if(cat === "ENTREGADA A LOGÍSTICA") stats[f].log++;
+        }
+
+        let html = "";
+        Object.keys(stats).reverse().forEach(fecha => {
+            let d = stats[fecha];
+            html += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card p-3 stat-card h-100">
+                        <div class="text-center mb-3 border-bottom pb-2">
+                            <h5 class="fw-bold mb-0 text-secondary">${fecha}</h5>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2"><span>Ingresos:</span> <span class="badge bg-success">${d.ing}</span></div>
+                        <div class="d-flex justify-content-between mb-2"><span>Rechazos:</span> <span class="badge bg-danger">${d.rech}</span></div>
+                        <div class="d-flex justify-content-between mb-2"><span>Pendientes:</span> <span class="badge bg-info">${d.pend}</span></div>
+                        <div class="d-flex justify-content-between mb-2"><span>Retiros:</span> <span class="badge bg-warning text-dark">${d.ret}</span></div>
+                        <div class="d-flex justify-content-between mb-2"><span>A Logística:</span> <span class="badge bg-primary">${d.log}</span></div>
+                        <div class="mt-3 pt-2 border-top text-center fw-bold">
+                            Total Movimientos: ${d.ing + d.rech + d.pend + d.ret + d.log}
+                        </div>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('statsContainer').innerHTML = html || "<div class='text-center w-100'>No hay datos registrados aún.</div>";
+    }
 
     document.getElementById('tallerForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -65,20 +166,30 @@
         const payload = {
             fecha: document.getElementById('fecha').value,
             ingresos: document.getElementById('ingresos').value,
-            rechazoPatente: document.getElementById('rechazoPatente').value,
-            motivoRechazo: document.getElementById('motivoRechazo').value,
             pendientes: document.getElementById('pendientes').value,
-            retiros: document.getElementById('retiros').value
+            retiros: document.getElementById('retiros').value,
+            rechazos: document.getElementById('rechazos').value,
+            motivoRechazo: document.getElementById('motivoRechazo').value,
+            entregas: document.getElementById('entregas').value
         };
 
-        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+        })
         .then(() => {
             document.getElementById('loading').style.display = 'none';
-            alert("✅ Reporte guardado. Los datos se enviaron a Excel.");
+            alert("✅ ¡Datos guardados correctamente en Excel!");
             this.reset();
             document.getElementById('fecha').valueAsDate = new Date();
+        })
+        .catch(err => {
+            document.getElementById('loading').style.display = 'none';
+            alert("❌ Error al guardar. Revisa la conexión.");
         });
     });
 </script>
+
 </body>
 </html>
