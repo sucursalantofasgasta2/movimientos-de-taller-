@@ -3,47 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Taller Eficiente</title>
+    <title>Gestión de Unidades Taller</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --success: #16a34a; --warning: #ca8a04; --danger: #dc2626; }
-        body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
-        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .nav-link { font-weight: bold; border-radius: 10px !important; margin: 0 5px; color: #64748b; }
-        .nav-link.active { background-color: var(--primary) !important; }
-        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
-        .progress { height: 12px; border-radius: 10px; background-color: #e2e8f0; }
-        .stat-card { border-top: 5px solid var(--primary); }
+        body { background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; }
+        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:2000; justify-content:center; align-items:center; flex-direction:column; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading">
-    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-    <h5 class="mt-3 fw-bold text-secondary">Sincronizando con Excel...</h5>
-</div>
+<div id="loading" class="loading"><div class="spinner-border text-primary"></div><h5 class="mt-3">Sincronizando...</h5></div>
 
 <div class="container py-4">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold">📊 PANEL DE GESTIÓN TALLER</h2>
+    <h2 class="text-center fw-bold mb-4">🚛 PANEL DE GESTIÓN TALLER</h2>
+
+    <div class="card p-3 mb-4 text-center">
+        <h6 class="text-muted small fw-bold">RENDIMIENTO SEMANAL (LUNES A VIERNES)</h6>
+        <h2 id="weekly-percent">0%</h2>
+        <div class="progress" style="height: 10px;"><div id="weekly-bar" class="progress-bar bg-success" style="width: 0%"></div></div>
+        <small id="weekly-label" class="text-muted mt-2">0 de 5 días reportados</small>
     </div>
 
-    <div class="card p-3 mb-4 border-0">
-        <div class="d-flex justify-content-between align-items-end mb-2">
-            <div>
-                <small class="text-muted fw-bold text-uppercase">Rendimiento Semanal (Lunes a Viernes)</small>
-                <h3 class="mb-0 fw-bold" id="weekly-percent">0%</h3>
+    <div class="card mx-auto p-4" style="max-width: 600px;">
+        <form id="tallerForm">
+            <div class="mb-3"><label class="form-label fw-bold">FECHA</label><input type="date" id="fecha" class="form-control" required></div>
+            
+            <div class="mb-3 text-success fw-bold"><label>INGRESOS:</label>
+                <textarea id="ingresos" class="form-control" rows="2" placeholder="Patente (Ej: SWVR65)"></textarea>
             </div>
-            <span id="weekly-label" class="badge bg-primary px-3 py-2">0 de 5 días reportados</span>
-        </div>
-        <div class="progress">
-            <div id="weekly-bar" class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: 0%"></div>
-        </div>
+            
+            <div class="p-3 bg-light rounded mb-3 border">
+                <label class="form-label text-danger fw-bold">UNIDADES RECHAZADAS:</label>
+                <input type="text" id="rechazoPatente" class="form-control mb-2" placeholder="Patente rechazada">
+                <textarea id="motivoRechazo" class="form-control" rows="2" placeholder="MOTIVO DEL RECHAZO (Ej: Testigos encendidos)"></textarea>
+            </div>
+
+            <div class="mb-3 text-info fw-bold"><label>PENDIENTES DE INGRESO:</label>
+                <textarea id="pendientes" class="form-control" rows="2" placeholder="Patente"></textarea>
+            </div>
+
+            <div class="mb-3 text-warning fw-bold"><label>RETIRADAS DE TALLER:</label>
+                <textarea id="retiros" class="form-control" rows="2" placeholder="Patente"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-3">GUARDAR Y EVALUAR 🚀</button>
+        </form>
     </div>
+</div>
 
-    <ul class="nav nav-pills nav-justified mb-4">
-        <li class="nav-item"><button class="nav-link active" id="tab-form" onclick="change
+<script>
+    // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT (LA QUE TERMINA EN /exec)
+    const SCRIPT_URL = "TU_URL_AQUI"; 
 
+    document.getElementById('fecha').valueAsDate = new Date();
+
+    document.getElementById('tallerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        document.getElementById('loading').style.display = 'flex';
+        
+        const payload = {
+            fecha: document.getElementById('fecha').value,
+            ingresos: document.getElementById('ingresos').value,
+            rechazoPatente: document.getElementById('rechazoPatente').value,
+            motivoRechazo: document.getElementById('motivoRechazo').value,
+            pendientes: document.getElementById('pendientes').value,
+            retiros: document.getElementById('retiros').value
+        };
+
+        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+        .then(() => {
+            document.getElementById('loading').style.display = 'none';
+            alert("✅ Reporte guardado. Los datos se enviaron a Excel.");
+            this.reset();
+            document.getElementById('fecha').valueAsDate = new Date();
+        });
+    });
+</script>
 </body>
 </html>
-
