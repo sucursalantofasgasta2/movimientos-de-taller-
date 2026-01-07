@@ -3,180 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Taller Logística</title>
+    <title>Gestión de Taller Eficiente</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
-        .card { border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; }
-        .nav-pills .nav-link.active { background-color: #0d6efd; }
-        .stats-card { border-left: 5px solid #0d6efd; }
-        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:2000; justify-content:center; align-items:center; flex-direction:column; }
-        .table-total { background-color: #e9ecef; font-weight: bold; }
+        :root { --primary: #2563eb; --success: #16a34a; --warning: #ca8a04; --danger: #dc2626; }
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .nav-link { font-weight: bold; border-radius: 10px !important; margin: 0 5px; color: #64748b; }
+        .nav-link.active { background-color: var(--primary) !important; }
+        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
+        .progress { height: 12px; border-radius: 10px; background-color: #e2e8f0; }
+        .stat-card { border-top: 5px solid var(--primary); }
     </style>
 </head>
 <body>
 
 <div id="loading" class="loading">
-    <div class="spinner-border text-primary" role="status"></div>
-    <h5 class="mt-3">Sincronizando con Google Sheets...</h5>
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+    <h5 class="mt-3 fw-bold text-secondary">Sincronizando con Excel...</h5>
 </div>
 
 <div class="container py-4">
-    <ul class="nav nav-pills justify-content-center mb-4" id="pills-tab" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" onclick="showView('form')" id="btn-form">📝 Registro Diario</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" onclick="showView('stats')" id="btn-stats">📊 Panel de Estadísticas</button>
-        </li>
-    </ul>
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">📊 PANEL DE GESTIÓN TALLER</h2>
+    </div>
 
-    <div id="view-form" class="view-section">
-        <div class="card mx-auto" style="max-width: 600px;">
-            <div class="card-header bg-primary text-white text-center fw-bold py-3">NUEVO REPORTE DIARIO</div>
-            <div class="card-body p-4">
-                <form id="tallerForm">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Fecha del Reporte</label>
-                        <input type="date" id="fecha" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-success fw-bold">INGRESOS</label>
-                        <textarea id="ingresos" class="form-control" rows="2" placeholder="Pegue aquí las patentes..."></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-info fw-bold">PENDIENTES DE INGRESO</label>
-                        <textarea id="pendientes" class="form-control" rows="2" placeholder="Unidades que no entraron..."></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-warning fw-bold">UNIDADES RETIRADAS DE TALLER</label>
-                        <textarea id="retiros" class="form-control" rows="2" placeholder="Unidades que salieron OK..."></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label text-danger fw-bold">RECHAZADAS</label>
-                            <textarea id="rechazos" class="form-control" rows="1" placeholder="Si no hubo, dejar vacío"></textarea>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label fw-bold">LOGÍSTICA</label>
-                            <textarea id="entregas" class="form-control" rows="1" placeholder="Entregadas"></textarea>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold py-3">ENVIAR A EXCEL 🚀</button>
-                </form>
+    <div class="card p-3 mb-4 border-0">
+        <div class="d-flex justify-content-between align-items-end mb-2">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Rendimiento Semanal (Lunes a Viernes)</small>
+                <h3 class="mb-0 fw-bold" id="weekly-percent">0%</h3>
             </div>
+            <span id="weekly-label" class="badge bg-primary px-3 py-2">0 de 5 días reportados</span>
+        </div>
+        <div class="progress">
+            <div id="weekly-bar" class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: 0%"></div>
         </div>
     </div>
 
-    <div id="view-stats" class="view-section" style="display: none;">
-        <div class="row" id="statsContainer">
-            <div class="col-12 text-center text-muted">Cargando datos históricos...</div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // URL DE TU IMPLEMENTACIÓN VERSIÓN 21
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5F2nfAV0K74CgIxg9VHMeYwq7M5rGU7ZMGngBVt6KwbdKZflZ0RiuBDXwZEAxCUkGOA/exec";
-
-    document.getElementById('fecha').valueAsDate = new Date();
-
-    function showView(view) {
-        document.getElementById('view-form').style.display = (view === 'form') ? 'block' : 'none';
-        document.getElementById('view-stats').style.display = (view === 'stats') ? 'block' : 'none';
-        document.getElementById('btn-form').classList.toggle('active', view === 'form');
-        document.getElementById('btn-stats').classList.toggle('active', view === 'stats');
-
-        if(view === 'stats') cargarEstadisticas();
-    }
-
-    function cargarEstadisticas() {
-        document.getElementById('loading').style.display = 'flex';
-        fetch(SCRIPT_URL)
-        .then(res => res.json())
-        .then(data => {
-            renderizarEstadisticas(data);
-            document.getElementById('loading').style.display = 'none';
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('loading').style.display = 'none';
-        });
-    }
-
-    function renderizarEstadisticas(data) {
-        let agrupado = {};
-        // Procesamos filas saltando cabecera (i=1)
-        for(let i=1; i < data.length; i++) {
-            let f = data[i][0]; // Fecha
-            let cat = data[i][1]; // Categoría
-            if(!f) continue;
-
-            let fechaStr = new Date(f).toLocaleDateString();
-            if(!agrupado[fechaStr]) agrupado[fechaStr] = {ing:0, ret:0, rech:0, log:0, pend:0};
-
-            if(cat === "INGRESO") agrupado[fechaStr].ing++;
-            if(cat === "UNIDAD RETIRADA DE TALLER") agrupado[fechaStr].ret++;
-            if(cat === "UNIDAD RECHAZADA") agrupado[fechaStr].rech++;
-            if(cat === "UNIDAD ENTREGADA A LOGÍSTICA") agrupado[fechaStr].log++;
-        }
-
-        let html = "";
-        const fechasOrdenadas = Object.keys(agrupado).reverse();
-
-        fechasOrdenadas.forEach(fecha => {
-            let d = agrupado[fecha];
-            let movimientosTotales = d.ing + d.ret + d.rech + d.log;
-            
-            html += `
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card stats-card h-100">
-                        <div class="card-header fw-bold bg-white border-0 pt-3">📅 Fecha: ${fecha}</div>
-                        <div class="card-body pt-0">
-                            <table class="table table-sm mt-2">
-                                <tbody>
-                                    <tr><td>Total Ingresos</td><td class="text-end fw-bold">${d.ing}</td></tr>
-                                    <tr><td>Total Retiros Taller</td><td class="text-end fw-bold">${d.ret}</td></tr>
-                                    <tr><td>Total Rechazos/Entregas</td><td class="text-end fw-bold">${d.rech + d.log}</td></tr>
-                                    <tr class="table-total">
-                                        <td>MOVIMIENTOS TOTALES</td>
-                                        <td class="text-end">${movimientosTotales}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>`;
-        });
-        document.getElementById('statsContainer').innerHTML = html || "<div class='text-center w-100'>No hay datos registrados.</div>";
-    }
-
-    document.getElementById('tallerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        document.getElementById('loading').style.display = 'flex';
-
-        const payload = {
-            fecha: document.getElementById('fecha').value,
-            ingresos: document.getElementById('ingresos').value,
-            pendientes: document.getElementById('pendientes').value,
-            retiros: document.getElementById('retiros').value,
-            rechazos: document.getElementById('rechazos').value,
-            entregas: document.getElementById('entregas').value
-        };
-
-        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-        .then(() => {
-            document.getElementById('loading').style.display = 'none';
-            alert("✅ Registro exitoso. Datos guardados de forma horizontal en la nube.");
-            this.reset();
-            document.getElementById('fecha').valueAsDate = new Date();
-        })
-        .catch(err => {
-            document.getElementById('loading').style.display = 'none';
-            alert("❌ Error al conectar.");
-        });
-    });
-</script>
+    <ul class="nav nav-pills nav-justified mb-4">
+        <li class="nav-item"><button class="nav-link active" id="tab-form" onclick="change
 
 </body>
 </html>
+
