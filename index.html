@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Gerencial Taller</title>
+    <title>Control Taller Profesional</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #1a73e8; --bg: #f0f2f5; }
-        body { background-color: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-        .stat-table th { background: #f8f9fa; font-size: 0.8rem; text-align: center; }
-        .stat-table td { text-align: center; fw-bold; }
-        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
+        :root { --primary: #1a73e8; --bg: #f4f7f6; }
+        body { background-color: var(--bg); font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .nav-pills .nav-link.active { background-color: var(--primary); border-radius: 20px; }
-        .badge-count { font-size: 0.9rem; padding: 5px 10px; border-radius: 8px; }
+        .stat-table th { background: #f8f9fa; font-size: 0.75rem; text-align: center; color: #5f6368; }
+        .stat-table td { text-align: center; font-weight: bold; font-size: 0.9rem; }
+        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
+        .btn-remove { color: #dc3545; cursor: pointer; font-weight: bold; border: none; background: none; }
     </style>
 </head>
 <body>
 
 <div id="loading" class="loading">
     <div class="spinner-border text-primary"></div>
-    <h5 class="mt-3">Generando Estadísticas...</h5>
+    <h5 class="mt-3 text-secondary">Actualizando Dashboard...</h5>
 </div>
 
 <div class="container py-4">
@@ -35,35 +35,36 @@
         <div class="card p-4 mx-auto" style="max-width: 600px;">
             <form id="tallerForm">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">FECHA REPORTE</label>
+                    <label class="form-label fw-bold small">FECHA REPORTE</label>
                     <input type="date" id="fecha" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold text-success">🟢 INGRESOS A TALLER</label>
+                    <label class="form-label fw-bold text-success small">🟢 INGRESOS A TALLER</label>
                     <textarea id="ingresos" class="form-control" rows="2" placeholder="Patentes..."></textarea>
                 </div>
                 <div class="p-3 bg-light rounded mb-3 border-start border-danger border-4">
-                    <label class="form-label fw-bold text-danger">🚫 RECHAZOS</label>
+                    <label class="form-label fw-bold text-danger small">🚫 RECHAZOS</label>
                     <div id="rechazosContainer">
-                        <div class="row g-2 mb-2">
-                            <div class="col-6"><input type="text" class="form-control rechazo-patente" placeholder="Patente"></div>
+                        <div class="row g-2 mb-2 align-items-center rechazo-row">
+                            <div class="col-5"><input type="text" class="form-control rechazo-patente" placeholder="Patente"></div>
                             <div class="col-6"><input type="text" class="form-control rechazo-motivo" placeholder="Motivo"></div>
+                            <div class="col-1"><button type="button" class="btn-remove" onclick="removeRechazo(this)">✕</button></div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="addRechazo()">+ Agregar otro rechazo</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="addRechazo()">+ Agregar otro rechazo</button>
                 </div>
-                <div class="mb-3"><label class="form-label fw-bold text-info">⌛ PENDIENTES DE INGRESO</label><textarea id="pendientes" class="form-control" rows="1"></textarea></div>
-                <div class="mb-3"><label class="form-label fw-bold text-warning">🔧 RETIRADAS DE TALLER</label><textarea id="retiros" class="form-control" rows="1"></textarea></div>
-                <div class="mb-4"><label class="form-label fw-bold text-primary">🚚 ENTREGADAS A LOGISTICA</label><textarea id="entregas" class="form-control" rows="1"></textarea></div>
+                <div class="mb-3"><label class="form-label fw-bold text-info small">⌛ PENDIENTES DE INGRESO</label><textarea id="pendientes" class="form-control" rows="1"></textarea></div>
+                <div class="mb-3"><label class="form-label fw-bold text-warning small">🔧 RETIRADAS DE TALLER</label><textarea id="retiros" class="form-control" rows="1"></textarea></div>
+                <div class="mb-4"><label class="form-label fw-bold text-primary small">🚚 ENTREGADAS A LOGISTICA</label><textarea id="entregas" class="form-control" rows="1"></textarea></div>
                 
-                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">ENVIAR REPORTE DE MOVIMIENTOS 🚀</button>
+                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow">ENVIAR REPORTE DE MOVIMIENTOS 🚀</button>
             </form>
         </div>
     </div>
 
     <div id="view-stats" style="display:none;">
-        <div class="card mb-4">
-            <div class="card-header bg-dark text-white fw-bold">📊 RESUMEN DE UNIDADES (DIARIO/SEMANAL/MENSUAL)</div>
+        <div class="card mb-4 overflow-hidden">
+            <div class="card-header bg-dark text-white fw-bold small">RESUMEN DE UNIDADES (DIARIO / SEMANAL / MENSUAL)</div>
             <div class="table-responsive">
                 <table class="table table-bordered stat-table mb-0">
                     <thead>
@@ -74,15 +75,17 @@
                             <th class="table-warning">MES</th>
                         </tr>
                     </thead>
-                    <tbody id="stats-body-comparison">
-                        </tbody>
+                    <tbody id="stats-body-comparison"></tbody>
                 </table>
             </div>
         </div>
 
-        <div id="efectividad-card"></div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6" id="efec-semanal"></div>
+            <div class="col-md-6" id="efec-mensual"></div>
+        </div>
 
-        <h5 class="fw-bold mb-3 mt-4">📋 Detalle por Día</h5>
+        <h5 class="fw-bold mb-3 mt-4 small">📋 DETALLE POR DÍA</h5>
         <div id="container-diario"></div>
     </div>
 </div>
@@ -94,9 +97,13 @@
 
     function addRechazo() {
         const div = document.createElement('div');
-        div.className = 'row g-2 mb-2';
-        div.innerHTML = '<div class="col-6"><input type="text" class="form-control rechazo-patente" placeholder="Patente"></div><div class="col-6"><input type="text" class="form-control rechazo-motivo" placeholder="Motivo"></div>';
+        div.className = 'row g-2 mb-2 align-items-center rechazo-row';
+        div.innerHTML = '<div class="col-5"><input type="text" class="form-control rechazo-patente" placeholder="Patente"></div><div class="col-6"><input type="text" class="form-control rechazo-motivo" placeholder="Motivo"></div><div class="col-1"><button type="button" class="btn-remove" onclick="removeRechazo(this)">✕</button></div>';
         document.getElementById('rechazosContainer').appendChild(div);
+    }
+
+    function removeRechazo(btn) {
+        btn.closest('.rechazo-row').remove();
     }
 
     function showTab(tab) {
@@ -110,96 +117,65 @@
     function loadData() {
         document.getElementById('loading').style.display = 'flex';
         fetch(SCRIPT_URL).then(r => r.json()).then(rows => {
-            renderGerencial(rows);
+            renderDashboard(rows);
             document.getElementById('loading').style.display = 'none';
         });
     }
 
-    function renderGerencial(rows) {
+    function renderDashboard(rows) {
         let totalDays = new Set();
+        let monthDays = new Set();
         let hoyStr = new Date().toLocaleDateString();
-        
-        // Estructura de contadores
-        const cats = ["INGRESOS A TALLER", "RECHAZOS", "PENDIENTES DE INGRESO", "RETIRADAS DE TALLER", "ENTREGADAS A LOGISTICA"];
-        let dataMap = {};
-        cats.forEach(c => dataMap[c] = { hoy: 0, sem: 0, mes: 0 });
-
-        let dailyGroup = {};
-
-        // Tiempos
         const hoy = new Date();
-        const inicioSemana = new Date(hoy); 
-        inicioSemana.setDate(hoy.getDate() - hoy.getDay() + 1); // Lunes
         const mesActual = hoy.getMonth();
+        const inicioSemana = new Date(hoy); 
+        inicioSemana.setDate(hoy.getDate() - (hoy.getDay() || 7) + 1);
+
+        const cats = ["INGRESOS A TALLER", "RECHAZOS", "PENDIENTES DE INGRESO", "RETIRADAS DE TALLER", "ENTREGADAS A LOGISTICA"];
+        let counts = {};
+        cats.forEach(c => counts[c] = { hoy: 0, sem: 0, mes: 0 });
+        let dailyGroup = {};
 
         for(let i=1; i<rows.length; i++){
             let [f, cat, pat, nota] = rows[i];
             if(!f) continue;
             let fechaRow = new Date(f);
             let dateStr = fechaRow.toLocaleDateString();
-            totalDays.add(dateStr);
 
-            // Conteos Diarios/Semanales/Mensuales
-            if(dataMap[cat]) {
-                if(dateStr === hoyStr) dataMap[cat].hoy++;
-                if(fechaRow >= inicioSemana) dataMap[cat].sem++;
-                if(fechaRow.getMonth() === mesActual) dataMap[cat].mes++;
+            if(fechaRow >= inicioSemana) totalDays.add(dateStr);
+            if(fechaRow.getMonth() === mesActual) monthDays.add(dateStr);
+
+            if(counts[cat]) {
+                if(dateStr === hoyStr) counts[cat].hoy++;
+                if(fechaRow >= inicioSemana) counts[cat].sem++;
+                if(fechaRow.getMonth() === mesActual) counts[cat].mes++;
             }
 
-            // Agrupar para tarjetas
-            if(!dailyGroup[dateStr]) dailyGroup[dateStr] = { ing:0, rech:0, pend:0, log:0, ret:0, items:[] };
+            if(!dailyGroup[dateStr]) dailyGroup[dateStr] = { ing:0, rech:0, pend:0, items:[] };
             if(cat === cats[0]) dailyGroup[dateStr].ing++;
             if(cat === cats[1]) dailyGroup[dateStr].rech++;
             if(cat === cats[2]) dailyGroup[dateStr].pend++;
-            if(cat === cats[3]) dailyGroup[dateStr].ret++;
-            if(cat === cats[4]) dailyGroup[dateStr].log++;
             dailyGroup[dateStr].items.push({cat, pat, nota});
         }
 
-        // 1. Render Tabla Gerencial
-        const tableBody = document.getElementById('stats-body-comparison');
-        tableBody.innerHTML = cats.map(c => `
-            <tr>
-                <td class="text-start ps-3 small fw-bold">${c}</td>
-                <td class="table-primary fw-bold">${dataMap[c].hoy}</td>
-                <td class="table-info">${dataMap[c].sem}</td>
-                <td class="table-warning">${dataMap[c].mes}</td>
-            </tr>
+        // Tabla comparativa
+        document.getElementById('stats-body-comparison').innerHTML = cats.map(c => `
+            <tr><td class="text-start ps-3 small">${c}</td><td>${counts[c].hoy}</td><td>${counts[c].sem}</td><td>${counts[c].mes}</td></tr>
         `).join('');
 
-        // 2. Render Efectividad Responsable
-        let efec = Math.min(100, (totalDays.size / 5) * 100);
-        document.getElementById('efectividad-card').innerHTML = `
-            <div class="card p-3 bg-white border-start border-dark border-4 shadow-sm text-center">
-                <span class="text-muted small fw-bold uppercase">EFECTIVIDAD DEL RESPONSABLE (SEMANAL)</span>
-                <h2 class="fw-bold mb-0 ${efec < 100 ? 'text-danger' : 'text-success'}">${efec.toFixed(0)}%</h2>
-                <small>Reportes enviados: ${totalDays.size} de 5 días laborales</small>
-            </div>
-        `;
+        // Efectividad Semanal y Mensual
+        let efSem = Math.min(100, (totalDays.size / 5) * 100);
+        let efMes = Math.min(100, (monthDays.size / 20) * 100);
 
-        // 3. Render Tarjetas Diarias
+        document.getElementById('efec-semanal').innerHTML = `<div class="card p-3 bg-white border-start border-primary border-4 shadow-sm text-center"><small class="fw-bold text-muted">EFECTIVIDAD SEMANAL</small><h2 class="fw-bold mb-0">${efSem.toFixed(0)}%</h2><small>${totalDays.size} de 5 días</small></div>`;
+        document.getElementById('efec-mensual').innerHTML = `<div class="card p-3 bg-white border-start border-success border-4 shadow-sm text-center"><small class="fw-bold text-muted">EFECTIVIDAD MENSUAL</small><h2 class="fw-bold mb-0 text-success">${efMes.toFixed(0)}%</h2><small>${monthDays.size} de 20 días laborales</small></div>`;
+
+        // Tarjetas
         const container = document.getElementById('container-diario');
         container.innerHTML = '';
         Object.keys(dailyGroup).reverse().forEach(dia => {
             let d = dailyGroup[dia];
-            container.innerHTML += `
-                <div class="card mb-3 overflow-hidden border-0 shadow-sm">
-                    <div class="card-header bg-white py-3 border-bottom">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="m-0 fw-bold text-primary">📅 ${dia}</h6>
-                            <div class="d-flex gap-1">
-                                <span class="badge bg-success small">ING: ${d.ing}</span>
-                                <span class="badge bg-danger small">RECH: ${d.rech}</span>
-                                <span class="badge bg-info small">PEND: ${d.pend}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-sm m-0" style="font-size: 0.85rem;">
-                            <tbody>${d.items.map(it => `<tr><td width="40%">${it.cat}</td><td width="30%"><b>${it.pat}</b></td><td width="30%">${it.nota || '-'}</td></tr>`).join('')}</tbody>
-                        </table>
-                    </div>
-                </div>`;
+            container.innerHTML += `<div class="card mb-3 border-0 shadow-sm"><div class="card-header bg-white py-2 border-bottom d-flex justify-content-between align-items-center"><h6 class="m-0 fw-bold text-primary small">📅 ${dia}</h6><div class="d-flex gap-1"><span class="badge bg-success small">ING: ${d.ing}</span><span class="badge bg-danger small">RECH: ${d.rech}</span></div></div><div class="card-body p-0"><table class="table table-sm m-0" style="font-size: 0.8rem;"><tbody>${d.items.map(it => `<tr><td width="40%">${it.cat}</td><td width="30%"><b>${it.pat}</b></td><td width="30%">${it.nota || '-'}</td></tr>`).join('')}</tbody></table></div></div>`;
         });
     }
 
@@ -207,8 +183,10 @@
         e.preventDefault();
         document.getElementById('loading').style.display = 'flex';
         let rechazos = [];
-        document.querySelectorAll('.rechazo-patente').forEach((p, i) => {
-            if(p.value.trim()) rechazos.push({patente: p.value.trim().toUpperCase(), motivo: document.querySelectorAll('.rechazo-motivo')[i].value.trim()});
+        document.querySelectorAll('.rechazo-row').forEach(row => {
+            let p = row.querySelector('.rechazo-patente').value.trim();
+            let m = row.querySelector('.rechazo-motivo').value.trim();
+            if(p) rechazos.push({patente: p.toUpperCase(), motivo: m});
         });
 
         fetch(SCRIPT_URL, {
@@ -231,3 +209,4 @@
 </script>
 </body>
 </html>
+
