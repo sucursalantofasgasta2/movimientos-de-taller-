@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión Operativa Taller - V6</title>
+    <title>Gestión Taller V7 - Final</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --success: #16a34a; --warning: #ca8a04; --danger: #dc2626; }
+        :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; }
         body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
         .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .nav-link { font-weight: bold; border-radius: 10px !important; margin: 0 5px; color: #64748b; }
@@ -34,32 +34,32 @@
         <div class="card mx-auto p-4" style="max-width: 650px;">
             <form id="tallerForm">
                 <div class="mb-3">
-                    <label class="fw-bold small">FECHA</label>
+                    <label class="fw-bold small text-uppercase">Fecha</label>
                     <input type="date" id="fecha" class="form-control" required>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="fw-bold small text-success">🟢 INGRESOS (Patentes)</label>
-                    <textarea id="ingresos" class="form-control" rows="1" placeholder="Ej: SWVR65 ABC123"></textarea>
+                    <label class="fw-bold small text-success text-uppercase">🟢 Ingresos (Patentes)</label>
+                    <textarea id="ingresos" class="form-control" rows="1" placeholder="Ej: ABC123XYZ"></textarea>
                 </div>
 
                 <div class="p-3 bg-light rounded-3 mb-3 border border-danger">
-                    <label class="fw-bold small text-danger">🚫 UNIDADES RECHAZADAS (Patente + Motivo)</label>
+                    <label class="fw-bold small text-danger text-uppercase">🚫 Unidades Rechazadas</label>
                     <div id="rechazosContainer">
                         <div class="rechazo-item">
                             <input type="text" class="form-control rechazo-patente" placeholder="Patente">
-                            <input type="text" class="form-control rechazo-motivo" placeholder="Motivo del rechazo">
+                            <input type="text" class="form-control rechazo-motivo" placeholder="Motivo">
                             <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">-</button>
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline-secondary w-100 btn-sm mt-2" onclick="addRechazoField()">+ Añadir otro vehículo rechazado</button>
                 </div>
 
-                <div class="mb-3"><label class="fw-bold small text-info">⌛ PENDIENTES DE INGRESO</label><textarea id="pendientes" class="form-control" rows="1"></textarea></div>
-                <div class="mb-3"><label class="fw-bold small text-warning">🔧 RETIRADAS DE TALLER</label><textarea id="retiros" class="form-control" rows="1"></textarea></div>
-                <div class="mb-4"><label class="fw-bold small text-primary">🚚 ENTREGADAS A LOGÍSTICA</label><textarea id="entregas" class="form-control" rows="1"></textarea></div>
+                <div class="mb-3"><label class="fw-bold small text-info text-uppercase">⌛ Pendientes</label><textarea id="pendientes" class="form-control" rows="1"></textarea></div>
+                <div class="mb-3"><label class="fw-bold small text-warning text-uppercase">🔧 Retiradas</label><textarea id="retiros" class="form-control" rows="1"></textarea></div>
+                <div class="mb-4"><label class="fw-bold small text-primary text-uppercase">🚚 Logística</label><textarea id="entregas" class="form-control" rows="1"></textarea></div>
 
-                <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold py-3 shadow">GUARDAR DATOS AHORA 🚀</button>
+                <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold py-3 shadow">GUARDAR DATOS 🚀</button>
             </form>
         </div>
     </div>
@@ -68,8 +68,7 @@
 </div>
 
 <script>
-    // URL DE TU VERSIÓN 6 ACTUALIZADA
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymlB3jJjl8ccpw5QzYVJiFGMRu_KHQ9r-cPCArh-y6GR4RJDnLnbNP8zjV7_OtQLFWFA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEshMoxRGGfXrlWI0ViBuBIutgRqjjj-CfMgxsenTX4w0vYpsxrNXdiGcJ9Dk3PGjSDw/exec";
 
     document.getElementById('fecha').valueAsDate = new Date();
 
@@ -115,7 +114,7 @@
                 <div class="d-flex justify-content-between small">Logística: <b>${d.log}</b></div>
             </div></div>`;
         });
-        document.getElementById('statsContainer').innerHTML = html || "<p class='text-center w-100'>No hay datos.</p>";
+        document.getElementById('statsContainer').innerHTML = html || "<p class='text-center w-100'>Sin datos.</p>";
     }
 
     document.getElementById('tallerForm').addEventListener('submit', function(e) {
@@ -145,7 +144,7 @@
         })
         .then(() => {
             document.getElementById('loading').style.display = 'none';
-            alert("✅ ¡Datos enviados exitosamente a Google Sheets!");
+            alert("✅ ¡Datos enviados a Google Sheets!");
             location.reload();
         })
         .catch(error => {
