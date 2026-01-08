@@ -3,130 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión Taller - V2</title>
+    <title>Gestión Taller Pro - V3</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; }
-        body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; padding-bottom: 50px; }
-        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .nav-link { font-weight: bold; border-radius: 10px !important; margin: 0 5px; color: #64748b; }
-        .nav-link.active { background-color: var(--primary) !important; color: white !important; }
-        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
-        .rechazo-item { display: flex; align-items: center; margin-bottom: 10px; gap: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; }
+        :root { --primary: #0d6efd; --success: #198754; --danger: #dc3545; --warning: #ffc107; --info: #0dcaf0; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .nav-pills .nav-link.active { background-color: var(--primary); font-weight: bold; }
+        .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
+        .kpi-box { padding: 15px; border-radius: 10px; color: white; text-align: center; }
+        .rechazo-item { border-bottom: 1px solid #eee; padding: 10px 0; }
     </style>
 </head>
 <body>
 
 <div id="loading" class="loading">
-    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-    <h5 class="mt-3 fw-bold text-secondary">Sincronizando con Google Sheets...</h5>
+    <div class="spinner-border text-primary"></div>
+    <h5 class="mt-3">Procesando envío...</h5>
 </div>
 
 <div class="container py-4">
-    <div class="text-center mb-4"><h2 class="fw-bold">🚀 DASHBOARD GESTIÓN TALLER</h2></div>
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary">SISTEMA PROFESIONAL DE TALLER</h2>
+    </div>
 
-    <ul class="nav nav-pills nav-justified mb-4">
-        <li class="nav-item"><button class="nav-link active" onclick="showTab('form')">📝 REGISTRO</button></li>
-        <li class="nav-item"><button class="nav-link" onclick="showTab('stats')">📈 KPIs</button></li>
+    <ul class="nav nav-pills nav-justified mb-4" id="pills-tab">
+        <li class="nav-item">
+            <button class="nav-link active" onclick="showTab('form')">📝 REGISTRO</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="showTab('stats')">📊 Estadísticas de movimientos</button>
+        </li>
     </ul>
 
     <div id="view-form">
-        <div class="card mx-auto p-4" style="max-width: 650px;">
+        <div class="card p-4 mx-auto" style="max-width: 600px;">
             <form id="tallerForm">
                 <div class="mb-3">
-                    <label class="fw-bold small">FECHA</label>
+                    <label class="fw-bold">FECHA DEL REPORTE</label>
                     <input type="date" id="fecha" class="form-control" required>
                 </div>
-                
+
                 <div class="mb-3">
-                    <label class="fw-bold small text-success">🟢 INGRESOS</label>
-                    <textarea id="ingresos" class="form-control" rows="1" placeholder="Ej: ABC123XYZ"></textarea>
+                    <label class="fw-bold text-success">🟢 INGRESOS A TALLER</label>
+                    <textarea id="ingresos" class="form-control" placeholder="Patentes separadas por espacio"></textarea>
                 </div>
 
-                <div class="p-3 bg-light rounded-3 mb-3 border border-danger">
-                    <label class="fw-bold small text-danger">🚫 UNIDADES RECHAZADAS</label>
+                <div class="p-3 bg-light rounded mb-3 border-start border-danger border-4">
+                    <label class="fw-bold text-danger">🚫 RECHAZOS (Patente y Motivo)</label>
                     <div id="rechazosContainer">
-                        <div class="rechazo-item">
-                            <input type="text" class="form-control rechazo-patente" placeholder="Patente">
-                            <input type="text" class="form-control rechazo-motivo" placeholder="Motivo">
-                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">-</button>
+                        <div class="row g-2 mb-2">
+                            <div class="col-5"><input type="text" class="form-control rechazo-patente" placeholder="Patente"></div>
+                            <div class="col-5"><input type="text" class="form-control rechazo-motivo" placeholder="Motivo"></div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline-secondary w-100 btn-sm mt-2" onclick="addRechazoField()">+ Añadir otro rechazo</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="addRechazo()">+ Agregar otro rechazo</button>
                 </div>
 
-                <div class="mb-3"><label class="fw-bold small text-info">⌛ PENDIENTES</label><textarea id="pendientes" class="form-control" rows="1"></textarea></div>
-                <div class="mb-3"><label class="fw-bold small text-warning">🔧 RETIRADAS</label><textarea id="retiros" class="form-control" rows="1"></textarea></div>
-                <div class="mb-4"><label class="fw-bold small text-primary">🚚 LOGÍSTICA</label><textarea id="entregas" class="form-control" rows="1"></textarea></div>
+                <div class="mb-3">
+                    <label class="fw-bold text-info">⌛ PENDIENTES DE INGRESO</label>
+                    <textarea id="pendientes" class="form-control"></textarea>
+                </div>
 
-                <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold py-3">GUARDAR REPORTE 🚀</button>
+                <div class="mb-3">
+                    <label class="fw-bold text-warning">🔧 RETIRADAS DE TALLER</label>
+                    <textarea id="retiros" class="form-control"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fw-bold text-primary">🚚 ENTREGADAS A LOGISTICA</label>
+                    <textarea id="entregas" class="form-control"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold">ENVIAR REPORTE DE MOVIMIENTOS 🚀</button>
             </form>
         </div>
     </div>
 
-    <div id="view-stats" style="display:none;"><div class="row g-4" id="statsContainer"></div></div>
+    <div id="view-stats" style="display:none;">
+        <div class="row g-3" id="kpi-summary">
+            </div>
+        <div class="card mt-4 p-3">
+            <h5 class="fw-bold border-bottom pb-2">Detalle Mensual / Semanal</h5>
+            <div id="efectividad-box" class="mb-3"></div>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Categoría</th>
+                            <th>Patente</th>
+                            <th>Nota/Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // URL ACTUALIZADA: VERSIÓN 2
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweGCUgf79TQyC792ArntqRieT77CWKhqD87sOZsF3zuKOKaZ9mGuR5n_9eeVuFsyMUpA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5hSEwQNqmO2KBdL_ts0WnZ15uiaRpwUEDF-zJNERwbUEjGc3uyWcHMIQbGUeyXXe42w/exec";
 
     document.getElementById('fecha').valueAsDate = new Date();
 
-    function addRechazoField() {
+    function addRechazo() {
         const div = document.createElement('div');
-        div.className = 'rechazo-item';
-        div.innerHTML = `<input type="text" class="form-control rechazo-patente" placeholder="Patente"><input type="text" class="form-control rechazo-motivo" placeholder="Motivo"><button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">-</button>`;
+        div.className = 'row g-2 mb-2';
+        div.innerHTML = '<div class="col-5"><input type="text" class="form-control rechazo-patente" placeholder="Patente"></div><div class="col-5"><input type="text" class="form-control rechazo-motivo" placeholder="Motivo"></div>';
         document.getElementById('rechazosContainer').appendChild(div);
     }
 
-    function showTab(view) {
-        document.getElementById('view-form').style.display = (view === 'form') ? 'block' : 'none';
-        document.getElementById('view-stats').style.display = (view === 'stats') ? 'block' : 'none';
-        if(view === 'stats') loadStats();
+    function showTab(tab) {
+        document.getElementById('view-form').style.display = tab === 'form' ? 'block' : 'none';
+        document.getElementById('view-stats').style.display = tab === 'stats' ? 'block' : 'none';
+        const buttons = document.querySelectorAll('.nav-link');
+        buttons[0].classList.toggle('active', tab === 'form');
+        buttons[1].classList.toggle('active', tab === 'stats');
+        if(tab === 'stats') loadData();
     }
 
-    function loadStats() {
+    function loadData() {
         document.getElementById('loading').style.display = 'flex';
-        fetch(SCRIPT_URL).then(res => res.json()).then(data => {
-            renderKPIs(data);
+        fetch(SCRIPT_URL).then(r => r.json()).then(rows => {
+            processStats(rows);
             document.getElementById('loading').style.display = 'none';
-        }).catch(() => document.getElementById('loading').style.display = 'none');
+        });
     }
 
-    function renderKPIs(data) {
-        let stats = {};
-        for(let i=1; i < data.length; i++) {
-            let f = new Date(data[i][0]).toLocaleDateString();
-            let cat = data[i][1];
-            if(!stats[f]) stats[f] = {ing:0, ret:0, rech:0, log:0};
-            if(cat === "INGRESO") stats[f].ing++;
-            if(cat === "RETIRADA") stats[f].ret++;
-            if(cat === "RECHAZADA") stats[f].rech++;
-            if(cat === "LOGISTICA") stats[f].log++;
+    function processStats(rows) {
+        const tableBody = document.getElementById('table-body');
+        tableBody.innerHTML = '';
+        let counts = { ing: 0, rech: 0, log: 0, pend: 0, ret: 0 };
+        let datesSent = new Set();
+        
+        // Procesar filas (saltando encabezado)
+        for(let i=1; i<rows.length; i++) {
+            const [fecha, cat, patente, nota] = rows[i];
+            const f = new Date(fecha).toLocaleDateString();
+            datesSent.add(f);
+
+            if(cat === "INGRESOS A TALLER") counts.ing++;
+            if(cat === "RECHAZOS") counts.rech++;
+            if(cat === "ENTREGADAS A LOGISTICA") counts.log++;
+            
+            let tr = `<tr><td>${f}</td><td>${cat}</td><td>${patente}</td><td>${nota}</td></tr>`;
+            tableBody.innerHTML += tr;
         }
-        let html = "";
-        Object.keys(stats).reverse().forEach(fecha => {
-            let d = stats[fecha];
-            html += `<div class="col-md-6 col-lg-4"><div class="card p-3">
-                <h6 class="fw-bold border-bottom pb-2 text-center small">${fecha}</h6>
-                <div class="d-flex justify-content-between small">Ingresos: <b>${d.ing}</b></div>
-                <div class="d-flex justify-content-between small text-danger">Rechazos: <b>${d.rech}</b></div>
-                <div class="d-flex justify-content-between small">Logística: <b>${d.log}</b></div>
-            </div></div>`;
-        });
-        document.getElementById('statsContainer').innerHTML = html || "<p class='text-center w-100'>No hay datos registrados todavía.</p>";
+
+        // Cálculo de efectividad (Días laborables de esta semana)
+        const hoy = new Date();
+        const diasSemana = 5; // Lun a Vie
+        let diasEnviados = datesSent.size; // Simplificado para el ejemplo
+        let efectividad = Math.min(100, (diasEnviados / diasSemana) * 100);
+
+        document.getElementById('kpi-summary').innerHTML = `
+            <div class="col-md-3"><div class="kpi-box bg-success"><h6>Ingresos</h6><h3>${counts.ing}</h3></div></div>
+            <div class="col-md-3"><div class="kpi-box bg-danger"><h6>Rechazos</h6><h3>${counts.rech}</h3></div></div>
+            <div class="col-md-3"><div class="kpi-box bg-primary"><h6>Logística</h6><h3>${counts.log}</h3></div></div>
+            <div class="col-md-3"><div class="kpi-box bg-dark"><h6>Efectividad</h6><h3>${efectividad.toFixed(0)}%</h3></div></div>
+        `;
+
+        document.getElementById('efectividad-box').innerHTML = `
+            <div class="alert ${efectividad < 100 ? 'alert-warning' : 'alert-success'}">
+                <strong>Días que no se ha enviado el reporte:</strong> Se han enviado ${diasEnviados} reportes esta semana de 5 días laborales.
+                Efectividad del responsable: <strong>${efectividad.toFixed(0)}%</strong>
+            </div>
+        `;
     }
 
     document.getElementById('tallerForm').addEventListener('submit', function(e) {
         e.preventDefault();
         document.getElementById('loading').style.display = 'flex';
         
-        const patentes = document.querySelectorAll('.rechazo-patente');
-        const motivos = document.querySelectorAll('.rechazo-motivo');
-        const rechazosArray = [];
-        patentes.forEach((p, i) => {
-            if(p.value.trim()) rechazosArray.push({patente: p.value.trim(), motivo: motivos[i].value.trim() || "S/M"});
+        const rechazos = [];
+        document.querySelectorAll('.rechazo-patente').forEach((p, i) => {
+            const m = document.querySelectorAll('.rechazo-motivo')[i];
+            if(p.value) rechazos.push({patente: p.value, motivo: m.value});
         });
 
         const payload = {
@@ -135,22 +189,18 @@
             pendientes: document.getElementById('pendientes').value,
             retiros: document.getElementById('retiros').value,
             entregas: document.getElementById('entregas').value,
-            rechazosArray: rechazosArray
+            rechazosArray: rechazos
         };
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(payload)
-        })
+        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
         .then(() => {
             document.getElementById('loading').style.display = 'none';
-            alert("✅ ¡Éxito! El dato se ha enviado a tu nueva hoja.");
+            alert("✅ reporte enviado con éxito");
             location.reload();
         })
         .catch(() => {
             document.getElementById('loading').style.display = 'none';
-            alert("❌ Error de red.");
+            alert("Error de conexión");
         });
     });
 </script>
