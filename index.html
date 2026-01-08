@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión Taller - V1 Final</title>
+    <title>Gestión Taller - V2</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; }
@@ -13,39 +13,38 @@
         .nav-link.active { background-color: var(--primary) !important; color: white !important; }
         .loading { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column; }
         .rechazo-item { display: flex; align-items: center; margin-bottom: 10px; gap: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; }
-        .label-bold { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 
 <div id="loading" class="loading">
     <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-    <h5 class="mt-3 fw-bold text-secondary">Guardando en Google Sheets...</h5>
+    <h5 class="mt-3 fw-bold text-secondary">Sincronizando con Google Sheets...</h5>
 </div>
 
 <div class="container py-4">
     <div class="text-center mb-4"><h2 class="fw-bold">🚀 DASHBOARD GESTIÓN TALLER</h2></div>
 
     <ul class="nav nav-pills nav-justified mb-4">
-        <li class="nav-item"><button class="nav-link active" id="btn-form" onclick="showTab('form')">📝 REGISTRO</button></li>
-        <li class="nav-item"><button class="nav-link" id="btn-stats" onclick="showTab('stats')">📈 EVALUACIÓN (KPIs)</button></li>
+        <li class="nav-item"><button class="nav-link active" onclick="showTab('form')">📝 REGISTRO</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="showTab('stats')">📈 KPIs</button></li>
     </ul>
 
     <div id="view-form">
         <div class="card mx-auto p-4" style="max-width: 650px;">
             <form id="tallerForm">
                 <div class="mb-3">
-                    <label class="label-bold">FECHA</label>
+                    <label class="fw-bold small">FECHA</label>
                     <input type="date" id="fecha" class="form-control" required>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="label-bold text-success">🟢 INGRESOS (Patentes)</label>
+                    <label class="fw-bold small text-success">🟢 INGRESOS</label>
                     <textarea id="ingresos" class="form-control" rows="1" placeholder="Ej: ABC123XYZ"></textarea>
                 </div>
 
                 <div class="p-3 bg-light rounded-3 mb-3 border border-danger">
-                    <label class="label-bold text-danger">🚫 UNIDADES RECHAZADAS (Patente + Motivo)</label>
+                    <label class="fw-bold small text-danger">🚫 UNIDADES RECHAZADAS</label>
                     <div id="rechazosContainer">
                         <div class="rechazo-item">
                             <input type="text" class="form-control rechazo-patente" placeholder="Patente">
@@ -53,14 +52,14 @@
                             <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">-</button>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline-secondary w-100 btn-sm mt-2" onclick="addRechazoField()">+ Añadir otro vehículo rechazado</button>
+                    <button type="button" class="btn btn-outline-secondary w-100 btn-sm mt-2" onclick="addRechazoField()">+ Añadir otro rechazo</button>
                 </div>
 
-                <div class="mb-3"><label class="label-bold text-info">⌛ PENDIENTES DE INGRESO</label><textarea id="pendientes" class="form-control" rows="1"></textarea></div>
-                <div class="mb-3"><label class="label-bold text-warning">🔧 RETIRADAS DE TALLER</label><textarea id="retiros" class="form-control" rows="1"></textarea></div>
-                <div class="mb-4"><label class="label-bold text-primary">🚚 ENTREGADAS A LOGÍSTICA</label><textarea id="entregas" class="form-control" rows="1"></textarea></div>
+                <div class="mb-3"><label class="fw-bold small text-info">⌛ PENDIENTES</label><textarea id="pendientes" class="form-control" rows="1"></textarea></div>
+                <div class="mb-3"><label class="fw-bold small text-warning">🔧 RETIRADAS</label><textarea id="retiros" class="form-control" rows="1"></textarea></div>
+                <div class="mb-4"><label class="fw-bold small text-primary">🚚 LOGÍSTICA</label><textarea id="entregas" class="form-control" rows="1"></textarea></div>
 
-                <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold py-3 shadow">GUARDAR DATOS 🚀</button>
+                <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold py-3">GUARDAR REPORTE 🚀</button>
             </form>
         </div>
     </div>
@@ -69,8 +68,8 @@
 </div>
 
 <script>
-    // URL DE TU NUEVA IMPLEMENTACIÓN V1
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNct94JYeXUFMfB2Lkdnm0BYoN3s3BjsIuLRqdeA3sBHHeaG-7vwfhNsaFICIokOkrBQ/exec";
+    // URL ACTUALIZADA: VERSIÓN 2
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweGCUgf79TQyC792ArntqRieT77CWKhqD87sOZsF3zuKOKaZ9mGuR5n_9eeVuFsyMUpA/exec";
 
     document.getElementById('fecha').valueAsDate = new Date();
 
@@ -84,8 +83,6 @@
     function showTab(view) {
         document.getElementById('view-form').style.display = (view === 'form') ? 'block' : 'none';
         document.getElementById('view-stats').style.display = (view === 'stats') ? 'block' : 'none';
-        document.getElementById('btn-form').classList.toggle('active', view === 'form');
-        document.getElementById('btn-stats').classList.toggle('active', view === 'stats');
         if(view === 'stats') loadStats();
     }
 
@@ -111,14 +108,14 @@
         let html = "";
         Object.keys(stats).reverse().forEach(fecha => {
             let d = stats[fecha];
-            html += `<div class="col-md-6"><div class="card p-3">
-                <h6 class="fw-bold border-bottom pb-2 text-center">${fecha}</h6>
+            html += `<div class="col-md-6 col-lg-4"><div class="card p-3">
+                <h6 class="fw-bold border-bottom pb-2 text-center small">${fecha}</h6>
                 <div class="d-flex justify-content-between small">Ingresos: <b>${d.ing}</b></div>
                 <div class="d-flex justify-content-between small text-danger">Rechazos: <b>${d.rech}</b></div>
                 <div class="d-flex justify-content-between small">Logística: <b>${d.log}</b></div>
             </div></div>`;
         });
-        document.getElementById('statsContainer').innerHTML = html || "<p class='text-center w-100'>No hay datos.</p>";
+        document.getElementById('statsContainer').innerHTML = html || "<p class='text-center w-100'>No hay datos registrados todavía.</p>";
     }
 
     document.getElementById('tallerForm').addEventListener('submit', function(e) {
@@ -148,12 +145,12 @@
         })
         .then(() => {
             document.getElementById('loading').style.display = 'none';
-            alert("✅ ¡Reporte guardado exitosamente en Google Sheets!");
+            alert("✅ ¡Éxito! El dato se ha enviado a tu nueva hoja.");
             location.reload();
         })
-        .catch(error => {
+        .catch(() => {
             document.getElementById('loading').style.display = 'none';
-            alert("❌ Error de conexión al servidor.");
+            alert("❌ Error de red.");
         });
     });
 </script>
